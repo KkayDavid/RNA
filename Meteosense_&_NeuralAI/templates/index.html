@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeteoSense - Aplicativo Web IoT</title>
+    <!-- CSS y Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-network-wired"></i>
+                <span>MeteoSense <span class="badge">Web</span></span>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>ESTACIONES IOT</h3>
+                <ul id="station-list" class="station-list">
+                    <li class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-footer">
+                <p><i class="fa-solid fa-shield-halved"></i> 100% Local y Offline</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="header-info">
+                    <h1 id="station-name">Selecciona una estación</h1>
+                    <p id="station-meta"><i class="fa-solid fa-location-dot"></i> --</p>
+                </div>
+                <div class="status-indicator">
+                    <span class="pulse"></span> <span id="conn-status">Conectando...</span>
+                </div>
+            </header>
+
+            <!-- NAVEGACIÓN POR PESTAÑAS (TABS) -->
+            <nav class="tabs-nav">
+                <button class="tab-btn active" data-target="tab-dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> MeteoSense (Aplicativo interactivo para visualización de datos)
+                </button>
+                <button class="tab-btn" data-target="tab-neural">
+                    <i class="fa-solid fa-brain"></i> Neural AI (Red neuronal para análisis y entrenamiento de estaciones meteorológicas basadas en IOT)
+                </button>
+            </nav>
+
+            <div class="content-scroll">
+                <!-- Loader principal -->
+                <div id="main-loader" class="loader-overlay hidden">
+                    <div class="spinner"></div>
+                    <p>Cargando telemetría de ThingSpeak...</p>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- PESTAÑA 1: METEOSENSE (APLICATIVO WEB)    -->
+                <!-- ========================================== -->
+                <div id="tab-dashboard" class="tab-pane active">
+                    <!-- KPIs -->
+                    <section class="kpis-grid" id="kpis-container">
+                        <!-- KPIs se generan aquí -->
+                    </section>
+
+                    <!-- Histórico -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-chart-area"></i> Datos Históricos (Tiempo Real)</h2>
+                            <select id="hist-col-selector" class="dropdown"></select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="historicalChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- PESTAÑA 2: RED NEURONAL                    -->
+                <!-- ========================================== -->
+                <div id="tab-neural" class="tab-pane hidden">
+                    <!-- Neural AI Training -->
+                    <section class="card premium-card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-microchip"></i> Motor Predictivo PyTorch</h2>
+                            <p class="subtitle" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">
+                                Entrena una red neuronal profunda con los datos históricos de la estación actual.
+                            </p>
+                        </div>
+                        
+                        <div class="ai-controls">
+                            <div class="input-group">
+                                <label>Variable objetivo a predecir:</label>
+                                <select id="target-col-selector" class="dropdown"></select>
+                            </div>
+                            <div class="input-group">
+                                <label>Épocas de Entrenamiento:</label>
+                                <input type="number" id="epochs-input" value="80" min="10" max="500">
+                            </div>
+                            <div class="input-group">
+                                <label>Períodos Futuros a Pronosticar:</label>
+                                <input type="number" id="periods-input" value="12" min="1" max="50">
+                            </div>
+                            <button id="train-btn" class="btn btn-primary">
+                                <i class="fa-solid fa-rocket"></i> Iniciar Entrenamiento y Predecir
+                            </button>
+                        </div>
+
+                        <!-- AI Results -->
+                        <div id="ai-results" class="ai-results hidden">
+                            <div class="metrics-grid" id="metrics-container"></div>
+                            
+                            <div class="grid-2-col mt-2">
+                                <div class="card-inner">
+                                    <h3>Pronóstico Futuro</h3>
+                                    <div class="chart-container-sm">
+                                        <canvas id="forecastChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card-inner">
+                                    <h3>Curva de Aprendizaje (Loss)</h3>
+                                    <div class="chart-container-sm">
+                                        <canvas id="lossChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid-2-col mt-2">
+                                <div class="card-inner">
+                                    <h3>Plan de Acción Recomendado por IA</h3>
+                                    <div id="actions-container" class="actions-list"></div>
+                                </div>
+                                <div class="card-inner">
+                                    <h3>Importancia de Variables (Features)</h3>
+                                    <div id="importance-container" class="importance-bars"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
