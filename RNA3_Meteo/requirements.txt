@@ -1,0 +1,9 @@
+# Neural AI v3.1 (Meteo) — Dependencias
+torch>=2.0.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+scipy>=1.11.0
+requests>=2.31.0
+flask>=3.0.0
+rich>=13.0.0
